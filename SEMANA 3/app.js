@@ -4,7 +4,7 @@ var canvas = document.getElementById("webgl-canvas");
 // Obtener el contexto WebGL
 var gl = canvas.getContext("webgl");
 
-// Verificar si WebGl oestá disponible 
+// Verificar si WebGl está disponible 
 if (!gl) {
     console.log("WebGL no esta soportado, intenta en otro navegador")
 } else {
