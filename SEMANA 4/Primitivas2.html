@@ -9,7 +9,7 @@
             :root {
                 color-scheme: light dark;
                 padding: 100px;
-            }
+            }q
 
             canvas {
                 border: 1px solid #fff;
@@ -35,6 +35,16 @@
                 height="500"
             ></canvas>
         </div>
-        <script src="Primitivas.js"></script>
+        <div style="text-align: center; margin-top: 20px;">
+            <label for="primitiva">Seleccionar Primitiva: </label>
+            <select id="primitiva">
+                <option value="punto">Punto</option>
+                <option value="linea">Línea</option>
+                <option value="triangulo">Triángulo</option>
+                <option value="cuadrado">Cuadrado</option>
+            </select>
+            <button id="btnDibujar">Dibujar</button>
+        </div>
+        <script src="Primitivas2.js"></script>
     </body>
 </html>

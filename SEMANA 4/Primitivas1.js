@@ -16,7 +16,6 @@ const vsSource = `
     
     void main(void) {
         gl_Position = aVertexPosition;
-        gl_PointSize = 10.0;
 
         vColor = aVertexColor;
     }
@@ -53,40 +52,60 @@ gl.useProgram(shaderProgram);
 
 // Buffers
 const positions = new Float32Array([
-    // Punto
-    -0.8, 0.8,
+    // LINE_STRIP - Zigzag verde
+    -0.9, 0.8,
+    -0.7, 0.5,
+    -0.9, 0.2,
+    -0.7, -0.1,
+    -0.9, -0.4,
 
-    // Linea
-    -0.8, -0.5,
-    -0.2, -0.5,
+    // LINE_LOOP - Pentagono rojo
+    0.0, 0.7,
+    0.5, 0.4,
+    0.4, -0.1,
+    -0.4, -0.1,
+    -0.5, 0.4,
 
-    // Triangulo
-    0.0, 0.5,
-    0.5, 0.0,
-    -0.5, 0.0,
+    // TRIANGLE_STRIP - Escalera azul
+    -0.9, -0.6,
+    -0.7, -0.6,
+    -0.9, -0.8,
+    -0.7, -0.8,
+    -0.9, -1.0,
+    -0.7, -1.0,
 
-    // Cuadrado (dos triangulos con TRIANGLE_FAN)
-    0.2, -0.2,
-    0.6, -0.2,
+    // TRIANGLE_FAN - Cuadrado amarillo
     0.6, -0.6,
-    0.2, -0.6
+    0.9, -0.6,
+    0.9, -0.9,
+    0.6, -0.9
 ])
 
-// Colores para cada vertice 
+// Colores para cada vertice
 const colors = new Float32Array([
-    // Punto rojo
+    // LINE_STRIP - Verde
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+
+    // LINE_LOOP - Rojo
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
     1.0, 0.0, 0.0, 1.0,
 
-    // Linea verde
-    0.0, 1.0, 0.0, 1.0,
-    0.0, 1.0, 0.0, 1.0,
+    // TRIANGLE_STRIP - Azul
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
 
-    // Triangulo azul
-    0.0, 0.0, 1.0, 1.0,
-    0.0, 0.0, 1.0, 1.0,
-    0.0, 0.0, 1.0, 1.0,
-    
-    // Cuadrado amarillo 
+    // TRIANGLE_FAN - Amarillo
     1.0, 1.0, 0.0, 1.0,
     1.0, 1.0, 0.0, 1.0,
     1.0, 1.0, 0.0, 1.0,
@@ -127,7 +146,14 @@ gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
 gl.enableVertexAttribArray(colorLocation);
 
 // Dibujar primitivas
-gl.drawArrays(gl.POINTS, 0, 1);
-gl.drawArrays(gl.LINES, 1, 2);
-gl.drawArrays(gl.TRIANGLES, 3, 3);
-gl.drawArrays(gl.TRIANGLE_FAN, 6,4);
+// LINE_STRIP: vertices 0-5 (5 vertices)
+gl.drawArrays(gl.LINE_STRIP, 0, 5);
+
+// LINE_LOOP: vertices 5-10 (5 vertices)
+gl.drawArrays(gl.LINE_LOOP, 5, 5);
+
+// TRIANGLE_STRIP: vertices 10-16 (6 vertices)
+gl.drawArrays(gl.TRIANGLE_STRIP, 10, 6);
+
+// TRIANGLE_FAN: vertices 16-20 (4 vertices)
+gl.drawArrays(gl.TRIANGLE_FAN, 16, 4);
