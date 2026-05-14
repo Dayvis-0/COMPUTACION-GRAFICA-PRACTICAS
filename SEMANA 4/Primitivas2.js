@@ -12,7 +12,7 @@ const vsSource = `
     attribute vec4 aVertexPosition;
     attribute vec4 aVertexColor;
     varying lowp vec4 vColor;
-    
+
     void main(void) {
         gl_Position = aVertexPosition;
         gl_PointSize = 10.0;
@@ -54,7 +54,7 @@ const colorBuffer = gl.createBuffer();
 const positionLocation = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 const colorLocation = gl.getAttribLocation(shaderProgram, "aVertexColor");
 
-// Generar puntos aleatorios en el rango [-1, 1]
+// Generar puntos aleatorios
 function generarPuntosAleatorios(cantidad) {
     const puntos = [];
     for (let i = 0; i < cantidad; i++) {
@@ -62,58 +62,71 @@ function generarPuntosAleatorios(cantidad) {
         const y = (Math.random() * 2 - 1) * 0.8;
         puntos.push(x, y);
     }
+    
     return puntos;
 }
 
-// Colores fijos para cada primitiva
+// Colores para cada primitiva
 const coloresPrimitivas = {
-    punto: [1.0, 0.0, 0.0, 1.0],      // Rojo
-    linea: [0.0, 1.0, 0.0, 1.0],      // Verde
-    triangulo: [0.0, 0.0, 1.0, 1.0],  // Azul
-    cuadrado: [1.0, 1.0, 0.0, 1.0]    // Amarillo
+    POINTS: [1.0, 0.0, 0.0, 1.0],         // Rojo
+    LINES: [0.0, 1.0, 0.0, 1.0],          // Verde
+    LINE_STRIP: [0.0, 1.0, 1.0, 1.0],     // Cian
+    LINE_LOOP: [1.0, 0.5, 0.0, 1.0],      // Naranja
+    TRIANGLES: [0.0, 0.0, 1.0, 1.0],       // Azul
+    TRIANGLE_STRIP: [0.5, 0.0, 0.5, 1.0], // Morado
+    TRIANGLE_FAN: [1.0, 1.0, 0.0, 1.0]   // Amarillo
 };
 
 // Función para dibujar la primitiva seleccionada
-function dibujarPrimitiva(tipo) {
+function dibujarPrimitiva(modo) {
     gl.clearColor(0.9, 0.9, 0.9, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const color = coloresPrimitivas[tipo];
-    let positions, colors, modo, count;
+    const color = coloresPrimitivas[modo];
+    let positions, count;
 
-    switch (tipo) {
-        case 'punto':
-            positions = generarPuntosAleatorios(1);
-            colors = color;
-            modo = gl.POINTS;
-            count = 1;
-            break;
-
-        case 'linea':
-            positions = generarPuntosAleatorios(2);
-            colors = [...color, ...color]; // Mismo color para ambos puntos
-            modo = gl.LINES;
-            count = 2;
-            break;
-
-        case 'triangulo':
-            positions = generarPuntosAleatorios(3);
-            colors = [...color, ...color, ...color];
-            modo = gl.TRIANGLES;
-            count = 3;
-            break;
-
-        case 'cuadrado':
-            positions = [
-                -0.2, 0.2,
-                0.2, 0.2,
-                0.2, -0.2,
-                -0.2, -0.2
-            ];
-            colors = [...color, ...color, ...color, ...color];
-            modo = gl.TRIANGLE_FAN;
+    // Configurar posiciones según el modo
+    switch (modo) {
+        case 'POINTS':
+            positions = generarPuntosAleatorios(4);
             count = 4;
             break;
+
+        case 'LINES':
+            positions = generarPuntosAleatorios(4); // 3 líneas (4 puntos)
+            count = 4;
+            break;
+
+        case 'LINE_STRIP':
+            positions = generarPuntosAleatorios(4);
+            count = 4;
+            break;
+
+        case 'LINE_LOOP':
+            positions = generarPuntosAleatorios(5); // Pentágono
+            count = 5;
+            break;
+
+        case 'TRIANGLES':
+            positions = generarPuntosAleatorios(6); // 2 triángulos
+            count = 6;
+            break;
+
+        case 'TRIANGLE_STRIP':
+            positions = generarPuntosAleatorios(6);
+            count = 6;
+            break;
+
+        case 'TRIANGLE_FAN':
+            positions = generarPuntosAleatorios(6); // Hexágono
+            count = 6;
+            break;
+    }
+
+    // Crear array de colores para todos los vértices
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        colors.push(...color);
     }
 
     // Configurar posiciones
@@ -129,14 +142,14 @@ function dibujarPrimitiva(tipo) {
     gl.enableVertexAttribArray(colorLocation);
 
     // Dibujar
-    gl.drawArrays(modo, 0, count);
+    gl.drawArrays(gl[modo], 0, count);
 }
 
 // Evento del botón
 document.getElementById('btnDibujar').addEventListener('click', () => {
-    const tipo = document.getElementById('primitiva').value;
-    dibujarPrimitiva(tipo);
+    const modo = document.getElementById('primitiva').value;
+    dibujarPrimitiva(modo);
 });
 
 // Dibujar por defecto al cargar
-dibujarPrimitiva('punto');
+dibujarPrimitiva('POINTS');

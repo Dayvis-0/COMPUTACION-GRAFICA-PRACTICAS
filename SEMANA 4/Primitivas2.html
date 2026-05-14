@@ -29,21 +29,24 @@
     <body>
         <h1 class="text">Primitivas</h1>
         <div class="div-canvas">
+            <div style="text-align: center; margin-top: 20px;">
+                <label for="primitiva">Seleccionar Primitiva: </label>
+                <select id="primitiva">
+                    <option value="POINTS">POINTS</option>
+                    <option value="LINES">LINES</option>
+                    <option value="LINE_STRIP">LINE_STRIP</option>
+                    <option value="LINE_LOOP">LINE_LOOP</option>
+                    <option value="TRIANGLES">TRIANGLES</option>
+                    <option value="TRIANGLE_STRIP">TRIANGLE_STRIP</option>
+                    <option value="TRIANGLE_FAN">TRIANGLE_FAN</option>
+                </select>
+                <button id="btnDibujar">Dibujar</button>
+            </div>
             <canvas
                 id="glcanvas"
                 width="500"
                 height="500"
             ></canvas>
-        </div>
-        <div style="text-align: center; margin-top: 20px;">
-            <label for="primitiva">Seleccionar Primitiva: </label>
-            <select id="primitiva">
-                <option value="punto">Punto</option>
-                <option value="linea">Línea</option>
-                <option value="triangulo">Triángulo</option>
-                <option value="cuadrado">Cuadrado</option>
-            </select>
-            <button id="btnDibujar">Dibujar</button>
         </div>
         <script src="Primitivas2.js"></script>
     </body>

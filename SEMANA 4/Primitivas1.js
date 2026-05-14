@@ -1,5 +1,4 @@
 const canvas = document.getElementById("glcanvas");
-
 const gl = canvas.getContext("webgl");
 
 if (!gl) {
@@ -25,7 +24,7 @@ const vsSource = `
 const fsSource = `
     varying lowp vec4 vColor;
 
-    void main(void) {
+    void main() {
         gl_FragColor = vColor;
     }
 `
