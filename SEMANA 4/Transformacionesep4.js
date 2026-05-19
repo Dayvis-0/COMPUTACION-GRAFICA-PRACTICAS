@@ -1,0 +1,218 @@
+const canvas = document.getElementById("glcanvas");
+const gl = canvas.getContext("webgl");
+
+if (!gl) {
+    alert("WebGL no esta disponible en este navegador");
+} else {
+    console.log("WebGL esta disponible en este navegador");
+}
+
+// Vertex shader
+const vsSource = `
+    attribute vec2 a_position;
+    uniform mat3 u_transform;
+    
+    void main(void) {
+        vec3 pos = u_transform * vec3(a_position, 1.0);
+        gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
+    }
+`
+
+// Fragment shader con color uniforme
+const fsSource = `
+    precision mediump float;
+    uniform vec3 u_color;
+    
+    void main() {
+        gl_FragColor = vec4(u_color, 1.0);
+    }
+`
+
+function createShader(gl, source, type) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+    }
+
+    return shader;
+}
+
+function initShaderProgram(gl, vsSource, fsSource) {
+    const vertexShader = createShader(gl, vsSource, gl.VERTEX_SHADER);
+    const fragmentShader = createShader(gl, fsSource, gl.FRAGMENT_SHADER);
+    const program = gl.createProgram();
+
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(program));
+        return null;
+    }
+
+    return program;
+}
+
+const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+gl.useProgram(shaderProgram);
+
+// Función para crear buffers de un cuadrado
+function createSquareBuffers(gl) {
+    const vertices = new Float32Array([
+        -0.5, -0.5,
+        0.5, -0.5,
+        0.5, 0.5,
+        -0.5, 0.5
+    ]);
+
+    const indices = new Uint16Array([
+        0, 1, 2,
+        0, 2, 3
+    ]);
+
+    const vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    const indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+    return { vertexBuffer, indexBuffer, vertexCount: indices.length };
+}
+
+// Crear buffers separados para cada cuadrado
+const square1Buffers = createSquareBuffers(gl);
+const square2Buffers = createSquareBuffers(gl);
+const square3Buffers = createSquareBuffers(gl);
+
+// Configurar atributo de posición
+const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'a_position');
+gl.enableVertexAttribArray(positionAttributeLocation);
+
+// Ubicación de uniforms
+const transformLocation = gl.getUniformLocation(shaderProgram, 'u_transform');
+const colorLocation = gl.getUniformLocation(shaderProgram, 'u_color');
+
+// Funciones de transformación
+function createTranslationMatrix(tx, ty) {
+    return new Float32Array([
+        1, 0, 0,
+        0, 1, 0,
+        tx, ty, 1
+    ]);
+}
+
+function createRotationMatrix(angleRad) {
+    const c = Math.cos(angleRad);
+    const s = Math.sin(angleRad);
+
+    return new Float32Array([
+        c, s, 0,
+        -s, c, 0,
+        0, 0, 1
+    ]);
+}
+
+function createScaleMatrix(sx, sy) {
+    return new Float32Array([
+        sx, 0, 0,
+        0, sy, 0,
+        0, 0, 1
+    ]);
+}
+
+function multiplyMat3(a, b) {
+    const a00 = a[0], a01 = a[3], a02 = a[6];
+    const a10 = a[1], a11 = a[4], a12 = a[7];
+    const a20 = a[2], a21 = a[5], a22 = a[8];
+    const b00 = b[0], b01 = b[3], b02 = b[6];
+    const b10 = b[1], b11 = b[4], b12 = b[7];
+    const b20 = b[2], b21 = b[5], b22 = b[8];
+
+    return new Float32Array([
+        a00*b00 + a01*b10 + a02*b20,
+        a10*b00 + a11*b10 + a12*b20,
+        a20*b00 + a21*b10 + a22*b20,
+        a00*b01 + a01*b11 + a02*b21,
+        a10*b01 + a11*b11 + a12*b21,
+        a20*b01 + a21*b11 + a22*b21,
+        a00*b02 + a01*b12 + a02*b22,
+        a10*b02 + a11*b12 + a12*b22,
+        a20*b02 + a21*b12 + a22*b22
+    ]);
+}
+
+// Función para dibujar un objeto con su propia transformación y color
+function drawObject(buffers, transformMatrix, color) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertexBuffer);
+    gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
+    
+    gl.uniformMatrix3fv(transformLocation, false, transformMatrix);
+    gl.uniform3fv(colorLocation, color);
+    
+    gl.drawElements(gl.TRIANGLES, buffers.vertexCount, gl.UNSIGNED_SHORT, 0);
+}
+
+// Loop de animación
+function draw(time) {
+    const t = time * 0.001;
+    
+    // Limpiar canvas
+    gl.clearColor(0.9, 0.9, 0.9, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    
+    // === CUADRADO 1: Rojo, rotando a la izquierda ===
+    const angle1 = -t * 1.0;
+    const tx1 = Math.sin(t * 1.5) * 0.4;
+    const ty1 = Math.cos(t * 1.2) * 0.3;
+    
+    const T1 = createTranslationMatrix(tx1, ty1);
+    const R1 = createRotationMatrix(angle1);
+    const S1 = createScaleMatrix(0.3, 0.3);
+    
+    let M1 = multiplyMat3(T1, R1);
+    M1 = multiplyMat3(M1, S1);
+    
+    drawObject(square1Buffers, M1, [0.9, 0.2, 0.2]); // Rojo
+    
+    // === CUADRADO 2: Verde, rotando a la derecha, posición diferente ===
+    const angle2 = t * 1.2 + Math.PI / 4;
+    const tx2 = Math.cos(t * 1.0 + 2) * 0.5;
+    const ty2 = Math.sin(t * 0.8 + 1) * 0.4;
+    
+    const T2 = createTranslationMatrix(tx2 - 0.5, ty2 + 0.3);
+    const R2 = createRotationMatrix(angle2);
+    const S2 = createScaleMatrix(0.25, 0.25);
+    
+    let M2 = multiplyMat3(T2, R2);
+    M2 = multiplyMat3(M2, S2);
+    
+    drawObject(square2Buffers, M2, [0.2, 0.8, 0.2]); // Verde
+    
+    // === CUADRADO 3: Azul, rotación con offset, posición diferente ===
+    const angle3 = -t * 0.8 + Math.PI / 2;
+    const tx3 = Math.sin(t * 0.7 + 3) * 0.4;
+    const ty3 = Math.cos(t * 1.3 + 1) * 0.35;
+    
+    const T3 = createTranslationMatrix(tx3 + 0.5, ty3 - 0.2);
+    const R3 = createRotationMatrix(angle3);
+    const S3 = createScaleMatrix(0.35, 0.35);
+    
+    let M3 = multiplyMat3(T3, R3);
+    M3 = multiplyMat3(M3, S3);
+    
+    drawObject(square3Buffers, M3, [0.2, 0.2, 0.9]); // Azul
+    
+    requestAnimationFrame(draw);
+}
+
+// Iniciar animación
+requestAnimationFrame(draw);

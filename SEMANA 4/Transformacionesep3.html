@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Animación Automática</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                padding: 100px;
+            }
+
+            .div-canvas {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            canvas {
+                border: 1px solid #fff;
+            }
+            
+            .info {
+                text-align: center;
+                margin-top: 20px;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Animación Automática: Rotación + Traslación Sinusoidal</h1>
+        <div class="div-canvas">
+            <canvas
+                id="glcanvas"
+                width="500"
+                height="500"
+            ></canvas>
+        </div>
+        <div class="info">
+            <p>Rotación continua y traslación sinusoidal usando requestAnimationFrame</p>
+            <p>Sin controles manuales - animación automática</p>
+        </div>
+        <script src="Transformacionesep3.js"></script>
+    </body>
+</html>

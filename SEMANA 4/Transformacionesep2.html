@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Triángulo Equilátero</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                padding: 100px;
+            }
+
+            .div-canvas {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            canvas {
+                border: 1px solid #fff;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Triángulo Equilátero Centrado</h1>
+        <div class="div-canvas">
+            <canvas
+                id="glcanvas"
+                width="500"
+                height="500"
+            ></canvas>
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label>Traslación X:</label>
+                <input type="range" id="tx" min="-1" max="1" step="0.01" value="0">
+                <span id="txValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Traslación Y:</label>
+                <input type="range" id="ty" min="-1" max="1" step="0.01" value="0">
+                <span id="tyValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Rotación (rad):</label>
+                <input type="range" id="angle" min="0" max="6.283" step="0.01" value="0">
+                <span id="angleValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Escala X:</label>
+                <input type="range" id="sx" min="0.2" max="2" step="0.01" value="1">
+                <span id="sxValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Escala Y:</label>
+                <input type="range" id="sy" min="0.2" max="2" step="0.01" value="1">
+                <span id="syValue">0.00</span>
+            </div>
+        </div>
+        <script src="Transformacionesep2.js"></script>
+    </body>
+</html>
