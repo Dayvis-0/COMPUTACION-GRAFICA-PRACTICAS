@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Formas y Colores</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            .div-canvas {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 20px 0;
+            }
+
+            canvas {
+                border: 1px solid #fff;
+            }
+
+            .controls {
+                text-align: center;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .control-group {
+                margin: 15px 0;
+                padding: 10px;
+                background: #222;
+                border-radius: 8px;
+            }
+
+            .control-group label {
+                display: block;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+
+            .shape-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .shape-buttons button {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background 0.3s;
+            }
+
+            .shape-buttons button.active {
+                background: #4CAF50;
+                color: white;
+            }
+
+            .shape-buttons button:not(.active) {
+                background: #444;
+                color: #ccc;
+            }
+
+            .color-picker {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .color-picker input[type="color"] {
+                width: 60px;
+                height: 40px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .color-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .color-btn {
+                width: 40px;
+                height: 40px;
+                border: 2px solid #555;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: transform 0.2s, border-color 0.2s;
+            }
+
+            .color-btn:hover {
+                transform: scale(1.1);
+            }
+
+            .color-btn.active {
+                border-color: white;
+                box-shadow: 0 0 10px white;
+            }
+
+            .transform-controls {
+                margin-top: 15px;
+            }
+
+            .transform-controls .control-row {
+                display: flex;
+                align-items: center;
+                margin: 10px 0;
+            }
+
+            .transform-controls label {
+                width: 120px;
+                text-align: right;
+                margin-right: 10px;
+                font-weight: normal;
+            }
+
+            .transform-controls input[type="range"] {
+                flex: 1;
+            }
+
+            .transform-controls span {
+                width: 50px;
+                text-align: left;
+                margin-left: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Formas y Colores en WebGL</h1>
+        
+        <div class="div-canvas">
+            <canvas id="glcanvas" width="500" height="500"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Seleccionar Forma:</label>
+                <div class="shape-buttons">
+                    <button id="btn-cuadrado" class="active" onclick="setShape('cuadrado')">Cuadrado</button>
+                    <button id="btn-triangulo" onclick="setShape('triangulo')">Triángulo</button>
+                    <button id="btn-circulo" onclick="setShape('circulo')">Círculo</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Color:</label>
+                <div class="color-buttons">
+                    <button class="color-btn active" style="background: red;" onclick="setColor(0.8, 0.2, 0.2, this)"></button>
+                    <button class="color-btn" style="background: lime;" onclick="setColor(0.2, 0.8, 0.2, this)"></button>
+                    <button class="color-btn" style="background: blue;" onclick="setColor(0.2, 0.2, 0.8, this)"></button>
+                    <button class="color-btn" style="background: yellow;" onclick="setColor(1.0, 1.0, 0.0, this)"></button>
+                    <button class="color-btn" style="background: cyan;" onclick="setColor(0.0, 1.0, 1.0, this)"></button>
+                    <button class="color-btn" style="background: magenta;" onclick="setColor(1.0, 0.0, 1.0, this)"></button>
+                    <button class="color-btn" style="background: white;" onclick="setColor(1.0, 1.0, 1.0, this)"></button>
+                    <button class="color-btn" style="background: black;" onclick="setColor(0.0, 0.0, 0.0, this)"></button>
+                    <button class="color-btn" style="background: orange;" onclick="setColor(1.0, 0.5, 0.0, this)"></button>
+                    <button class="color-btn" style="background: purple;" onclick="setColor(0.5, 0.0, 0.5, this)"></button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Transformaciones:</label>
+                <div class="transform-controls">
+                    <div class="control-row">
+                        <label>Traslación X:</label>
+                        <input type="range" id="tx" min="-1" max="1" step="0.01" value="0">
+                        <span id="txValue">0.00</span>
+                    </div>
+                    <div class="control-row">
+                        <label>Traslación Y:</label>
+                        <input type="range" id="ty" min="-1" max="1" step="0.01" value="0">
+                        <span id="tyValue">0.00</span>
+                    </div>
+                    <div class="control-row">
+                        <label>Rotación (rad):</label>
+                        <input type="range" id="angle" min="0" max="6.283" step="0.01" value="0">
+                        <span id="angleValue">0.00</span>
+                    </div>
+                    <div class="control-row">
+                        <label>Escala X:</label>
+                        <input type="range" id="sx" min="0.2" max="2" step="0.01" value="1">
+                        <span id="sxValue">0.00</span>
+                    </div>
+                    <div class="control-row">
+                        <label>Escala Y:</label>
+                        <input type="range" id="sy" min="0.2" max="2" step="0.01" value="1">
+                        <span id="syValue">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="FormasColores.js"></script>
+    </body>
+</html>

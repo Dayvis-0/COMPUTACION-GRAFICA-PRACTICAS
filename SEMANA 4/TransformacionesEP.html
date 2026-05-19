@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Transformaciones - Ejercicios</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            .menu {
+                text-align: center;
+                margin-bottom: 20px;
+                padding: 15px;
+                background: #333;
+                border-radius: 8px;
+            }
+
+            .menu select {
+                padding: 10px 15px;
+                font-size: 16px;
+                border-radius: 5px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .div-canvas {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            canvas {
+                border: 1px solid #fff;
+            }
+
+            .controls {
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .control-group {
+                margin: 10px 0;
+            }
+
+            .control-group label {
+                display: inline-block;
+                width: 120px;
+                text-align: right;
+                margin-right: 10px;
+            }
+
+            .control-group input {
+                width: 200px;
+            }
+
+            .info {
+                text-align: center;
+                margin-top: 15px;
+                color: #888;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Transformaciones Geométricas 2D en WebGL</h1>
+        
+        <div class="menu">
+            <label for="ejercicio">Seleccionar ejercicio: </label>
+            <select id="ejercicio">
+                <option value="1">1. Cambiar color según posición</option>
+                <option value="2">2. Triángulo equilátero</option>
+                <option value="3">3. Animación automática</option>
+                <option value="4">4. Transformaciones independientes</option>
+            </select>
+        </div>
+
+        <div class="div-canvas">
+            <canvas id="glcanvas" width="500" height="500"></canvas>
+        </div>
+
+        <!-- Controles (solo visibles para ejercicios 1 y 2) -->
+        <div class="controls" id="controls">
+            <div class="control-group">
+                <label>Traslación X:</label>
+                <input type="range" id="tx" min="-1" max="1" step="0.01" value="0">
+                <span id="txValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Traslación Y:</label>
+                <input type="range" id="ty" min="-1" max="1" step="0.01" value="0">
+                <span id="tyValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Rotación (rad):</label>
+                <input type="range" id="angle" min="0" max="6.283" step="0.01" value="0">
+                <span id="angleValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Escala X:</label>
+                <input type="range" id="sx" min="0.2" max="2" step="0.01" value="1">
+                <span id="sxValue">0.00</span>
+            </div>
+            <div class="control-group">
+                <label>Escala Y:</label>
+                <input type="range" id="sy" min="0.2" max="2" step="0.01" value="1">
+                <span id="syValue">0.00</span>
+            </div>
+        </div>
+
+        <div class="info" id="info">
+            Ejercicio 1: Color según posición X/Y del vértice
+        </div>
+
+        <script src="TransformacionesEP.js"></script>
+    </body>
+</html>

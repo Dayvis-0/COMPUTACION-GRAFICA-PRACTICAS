@@ -1,3 +1,5 @@
+// Ejercicio 4: Transformaciones Independientes (3 cuadrados)
+
 const canvas = document.getElementById("glcanvas");
 const gl = canvas.getContext("webgl");
 
@@ -7,7 +9,6 @@ if (!gl) {
     console.log("WebGL esta disponible en este navegador");
 }
 
-// Vertex shader
 const vsSource = `
     attribute vec2 a_position;
     uniform mat3 u_transform;
@@ -16,9 +17,8 @@ const vsSource = `
         vec3 pos = u_transform * vec3(a_position, 1.0);
         gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
     }
-`
+`;
 
-// Fragment shader con color uniforme
 const fsSource = `
     precision mediump float;
     uniform vec3 u_color;
@@ -26,7 +26,7 @@ const fsSource = `
     void main() {
         gl_FragColor = vec4(u_color, 1.0);
     }
-`
+`;
 
 function createShader(gl, source, type) {
     const shader = gl.createShader(type);
@@ -62,7 +62,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
 const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 gl.useProgram(shaderProgram);
 
-// Función para crear buffers de un cuadrado
+// Crear buffers para un cuadrado
 function createSquareBuffers(gl) {
     const vertices = new Float32Array([
         -0.5, -0.5,
@@ -87,45 +87,29 @@ function createSquareBuffers(gl) {
     return { vertexBuffer, indexBuffer, vertexCount: indices.length };
 }
 
-// Crear buffers separados para cada cuadrado
+// Crear 3 conjuntos de buffers separados
 const square1Buffers = createSquareBuffers(gl);
 const square2Buffers = createSquareBuffers(gl);
 const square3Buffers = createSquareBuffers(gl);
 
-// Configurar atributo de posición
 const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'a_position');
 gl.enableVertexAttribArray(positionAttributeLocation);
 
-// Ubicación de uniforms
 const transformLocation = gl.getUniformLocation(shaderProgram, 'u_transform');
 const colorLocation = gl.getUniformLocation(shaderProgram, 'u_color');
 
-// Funciones de transformación
 function createTranslationMatrix(tx, ty) {
-    return new Float32Array([
-        1, 0, 0,
-        0, 1, 0,
-        tx, ty, 1
-    ]);
+    return new Float32Array([1, 0, 0, 0, 1, 0, tx, ty, 1]);
 }
 
 function createRotationMatrix(angleRad) {
     const c = Math.cos(angleRad);
     const s = Math.sin(angleRad);
-
-    return new Float32Array([
-        c, s, 0,
-        -s, c, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([c, s, 0, -s, c, 0, 0, 0, 1]);
 }
 
 function createScaleMatrix(sx, sy) {
-    return new Float32Array([
-        sx, 0, 0,
-        0, sy, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
 }
 
 function multiplyMat3(a, b) {
@@ -161,15 +145,14 @@ function drawObject(buffers, transformMatrix, color) {
     gl.drawElements(gl.TRIANGLES, buffers.vertexCount, gl.UNSIGNED_SHORT, 0);
 }
 
-// Loop de animación
+// Animación con 3 cuadrados
 function draw(time) {
     const t = time * 0.001;
     
-    // Limpiar canvas
     gl.clearColor(0.9, 0.9, 0.9, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     
-    // === CUADRADO 1: Rojo, rotando a la izquierda ===
+    // Cuadrado 1: Rojo
     const angle1 = -t * 1.0;
     const tx1 = Math.sin(t * 1.5) * 0.4;
     const ty1 = Math.cos(t * 1.2) * 0.3;
@@ -181,9 +164,9 @@ function draw(time) {
     let M1 = multiplyMat3(T1, R1);
     M1 = multiplyMat3(M1, S1);
     
-    drawObject(square1Buffers, M1, [0.9, 0.2, 0.2]); // Rojo
+    drawObject(square1Buffers, M1, [0.9, 0.2, 0.2]);
     
-    // === CUADRADO 2: Verde, rotando a la derecha, posición diferente ===
+    // Cuadrado 2: Verde
     const angle2 = t * 1.2 + Math.PI / 4;
     const tx2 = Math.cos(t * 1.0 + 2) * 0.5;
     const ty2 = Math.sin(t * 0.8 + 1) * 0.4;
@@ -195,9 +178,9 @@ function draw(time) {
     let M2 = multiplyMat3(T2, R2);
     M2 = multiplyMat3(M2, S2);
     
-    drawObject(square2Buffers, M2, [0.2, 0.8, 0.2]); // Verde
+    drawObject(square2Buffers, M2, [0.2, 0.8, 0.2]);
     
-    // === CUADRADO 3: Azul, rotación con offset, posición diferente ===
+    // Cuadrado 3: Azul
     const angle3 = -t * 0.8 + Math.PI / 2;
     const tx3 = Math.sin(t * 0.7 + 3) * 0.4;
     const ty3 = Math.cos(t * 1.3 + 1) * 0.35;
@@ -209,10 +192,9 @@ function draw(time) {
     let M3 = multiplyMat3(T3, R3);
     M3 = multiplyMat3(M3, S3);
     
-    drawObject(square3Buffers, M3, [0.2, 0.2, 0.9]); // Azul
+    drawObject(square3Buffers, M3, [0.2, 0.2, 0.9]);
     
     requestAnimationFrame(draw);
 }
 
-// Iniciar animación
 requestAnimationFrame(draw);

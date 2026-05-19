@@ -1,3 +1,5 @@
+// Ejercicio 2: Triángulo Equilátero
+
 const canvas = document.getElementById("glcanvas");
 const gl = canvas.getContext("webgl");
 
@@ -7,7 +9,6 @@ if (!gl) {
     console.log("WebGL esta disponible en este navegador");
 }
 
-// Vertex shader
 const vsSource = `
     attribute vec2 a_position;
     uniform mat3 u_transform;
@@ -16,16 +17,15 @@ const vsSource = `
         vec3 pos = u_transform * vec3(a_position, 1.0);
         gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
     }
-`
+`;
 
-// Fragment shader (color fijo, igual que el original)
 const fsSource = `
     precision mediump float;
 
     void main() {
         gl_FragColor = vec4(0.8, 0.2, 0.2, 1.0);
     }
-`
+`;
 
 function createShader(gl, source, type) {
     const shader = gl.createShader(type);
@@ -61,19 +61,16 @@ function initShaderProgram(gl, vsSource, fsSource) {
 const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 gl.useProgram(shaderProgram);
 
-// Triángulo equilátero centrado en el origen
+// Crear buffers para un TRIÁNGULO EQUILÁTERO centrado
+// La altura de un triángulo equilátero de lado 1 es: h = sqrt(3)/2
 function initBuffer(gl) {
-    // Lado = 1, altura = sqrt(3)/2 ≈ 0.866
-    // Centroide a 1/3 de la altura desde la base
     const side = 1.0;
     const height = side * Math.sqrt(3) / 2;
     
-    // Vértices del triángulo equilátero centrado en el origen
-    // El centroide (centro de masa) está en (0, 0)
     const vertices = new Float32Array([
-        0, height * 2/3,           // 0: Superior
-        -side/2, -height/3,       // 1: Inferior izquierdo
-        side/2, -height/3          // 2: Inferior derecho
+        0, height * 2/3,
+        -side/2, -height/3,
+        side/2, -height/3
     ]);
 
     const indices = new Uint16Array([0, 1, 2]);
@@ -99,30 +96,17 @@ gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 const transformLocation = gl.getUniformLocation(shaderProgram, 'u_transform');
 
 function createTranslationMatrix(tx, ty) {
-    return new Float32Array([
-        1, 0, 0,
-        0, 1, 0,
-        tx, ty, 1
-    ]);
+    return new Float32Array([1, 0, 0, 0, 1, 0, tx, ty, 1]);
 }
 
 function createRotationMatrix(angleRad) {
     const c = Math.cos(angleRad);
     const s = Math.sin(angleRad);
-
-    return new Float32Array([
-        c, s, 0,
-        -s, c, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([c, s, 0, -s, c, 0, 0, 0, 1]);
 }
 
 function createScaleMatrix(sx, sy) {
-    return new Float32Array([
-        sx, 0, 0,
-        0, sy, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
 }
 
 function multiplyMat3(a, b) {

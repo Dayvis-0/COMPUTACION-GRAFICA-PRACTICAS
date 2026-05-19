@@ -1,3 +1,5 @@
+// Ejercicio 3: Animación Automática (sin sliders)
+
 const canvas = document.getElementById("glcanvas");
 const gl = canvas.getContext("webgl");
 
@@ -7,7 +9,6 @@ if (!gl) {
     console.log("WebGL esta disponible en este navegador");
 }
 
-// Vertex shader
 const vsSource = `
     attribute vec2 a_position;
     uniform mat3 u_transform;
@@ -16,16 +17,15 @@ const vsSource = `
         vec3 pos = u_transform * vec3(a_position, 1.0);
         gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
     }
-`
+`;
 
-// Fragment shader
 const fsSource = `
     precision mediump float;
 
     void main() {
         gl_FragColor = vec4(0.8, 0.2, 0.2, 1.0);
     }
-`
+`;
 
 function createShader(gl, source, type) {
     const shader = gl.createShader(type);
@@ -61,7 +61,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
 const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 gl.useProgram(shaderProgram);
 
-// Cuadrado original
+// Buffer para un cuadrado
 function initBuffer(gl) {
     const vertices = new Float32Array([
         -0.5, -0.5,
@@ -96,30 +96,17 @@ gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 const transformLocation = gl.getUniformLocation(shaderProgram, 'u_transform');
 
 function createTranslationMatrix(tx, ty) {
-    return new Float32Array([
-        1, 0, 0,
-        0, 1, 0,
-        tx, ty, 1
-    ]);
+    return new Float32Array([1, 0, 0, 0, 1, 0, tx, ty, 1]);
 }
 
 function createRotationMatrix(angleRad) {
     const c = Math.cos(angleRad);
     const s = Math.sin(angleRad);
-
-    return new Float32Array([
-        c, s, 0,
-        -s, c, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([c, s, 0, -s, c, 0, 0, 0, 1]);
 }
 
 function createScaleMatrix(sx, sy) {
-    return new Float32Array([
-        sx, 0, 0,
-        0, sy, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
 }
 
 function multiplyMat3(a, b) {
@@ -143,42 +130,37 @@ function multiplyMat3(a, b) {
     ]);
 }
 
-// Animation loop con requestAnimationFrame
+// Animación automática usando requestAnimationFrame
+// El parámetro 'time' viene en milisegundos
 function draw(time) {
-    // Convertir tiempo a segundos
+    // Convertir a segundos
     const t = time * 0.001;
     
-    // Rotación continua
+    // Rotación continua: ángulo aumenta con el tiempo
     const angle = t * 1.5;
     
     // Traslación sinusoidal
     const tx = Math.sin(t * 2) * 0.5;
     const ty = Math.cos(t * 1.5) * 0.3;
     
-    // Escala fija
     const sx = 0.5;
     const sy = 0.5;
     
-    // Matrices de transformación
     const T = createTranslationMatrix(tx, ty);
     const R = createRotationMatrix(angle);
     const S = createScaleMatrix(sx, sy);
     
-    // Composición: M = T * R * S
     let M = multiplyMat3(T, R);
     M = multiplyMat3(M, S);
     
     gl.uniformMatrix3fv(transformLocation, false, M);
     
-    // Limpiar canvas
     gl.clearColor(0.9, 0.9, 0.9, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
     gl.drawElements(gl.TRIANGLES, buffers.vertexCount, gl.UNSIGNED_SHORT, 0);
     
-    // Continuar animación
     requestAnimationFrame(draw);
 }
 
-// Iniciar animación
 requestAnimationFrame(draw);

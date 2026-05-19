@@ -1,3 +1,6 @@
+// Ejercicio 1: Color según posición del vértice
+
+// Obtener el canvas y el contexto WebGL
 const canvas = document.getElementById("glcanvas");
 const gl = canvas.getContext("webgl");
 
@@ -7,36 +10,33 @@ if (!gl) {
     console.log("WebGL esta disponible en este navegador");
 }
 
-// Vertex shader - pasa la posición al fragment shader
+// Vertex Shader: Pasa la posición al fragment shader
+// IMPORTANTE: Se pasa a_position (posición original) al fragment shader,
+// NO la posición transformada, para que el color no cambie al mover la figura
 const vsSource = `
     attribute vec2 a_position;
     varying vec2 v_position;
     uniform mat3 u_transform;
     
     void main(void) {
-        // Aplicar transformación homogenea
         vec3 pos = u_transform * vec3(a_position, 1.0);
         gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
-        
-        // Pasar posición al fragment shader
         v_position = a_position;
     }
-`
+`;
 
-// Fragment shader - color varía según posición X/Y
+// Fragment Shader: Calcula el color según la posición
+// rojo = (x + 0.5), verde = (y + 0.5)
 const fsSource = `
     precision mediump float;
     varying vec2 v_position;
     
     void main() {
-        // Rojo = (x + 0.5), Verde = (y + 0.5)
         float red = clamp(v_position.x + 0.5, 0.0, 1.0);
         float green = clamp(v_position.y + 0.5, 0.0, 1.0);
-        float blue = 0.5;
-        
-        gl_FragColor = vec4(red, green, blue, 1.0);
+        gl_FragColor = vec4(red, green, 0, 1.0);
     }
-`
+`;
 
 function createShader(gl, source, type) {
     const shader = gl.createShader(type);
@@ -72,7 +72,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
 const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 gl.useProgram(shaderProgram);
 
-// Cuadrado (sin cambios en la geometría)
+// Crear buffers para un cuadrado
 function initBuffer(gl) {
     const vertices = new Float32Array([
         -0.5, -0.5,
@@ -107,30 +107,17 @@ gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 const transformLocation = gl.getUniformLocation(shaderProgram, 'u_transform');
 
 function createTranslationMatrix(tx, ty) {
-    return new Float32Array([
-        1, 0, 0,
-        0, 1, 0,
-        tx, ty, 1
-    ]);
+    return new Float32Array([1, 0, 0, 0, 1, 0, tx, ty, 1]);
 }
 
 function createRotationMatrix(angleRad) {
     const c = Math.cos(angleRad);
     const s = Math.sin(angleRad);
-
-    return new Float32Array([
-        c, s, 0,
-        -s, c, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([c, s, 0, -s, c, 0, 0, 0, 1]);
 }
 
 function createScaleMatrix(sx, sy) {
-    return new Float32Array([
-        sx, 0, 0,
-        0, sy, 0,
-        0, 0, 1
-    ]);
+    return new Float32Array([sx, 0, 0, 0, sy, 0, 0, 0, 1]);
 }
 
 function multiplyMat3(a, b) {
