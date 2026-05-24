@@ -62,80 +62,111 @@ const colorLocation = gl.getAttribLocation(program, "a_color");
 const positionBuffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
 
-// 4. Algoritmo de Cohen-Sutherlandoi
-// Funcion  para calcular el codigo de region de un punto 
+// 4. Algoritmo Midpoint Subdivision (Punto Medio)
+// Funcion para calcular el codigo de region de un punto
 function getRegionCode(x, y, clip) {
     let code = 0;
 
     if (x < clip.xmin) code |= 1; // Izquierda
     if (x > clip.xmax) code |= 2; // Derecha 
     if (y < clip.ymin) code |= 4; // Abajo
-    if (y > clip.ymax) code |= 8; // Arribe
+    if (y > clip.ymax) code |= 8; // Arriba
 
     return code;
 }
 
-// Funcion para recortar la linea usando Cohen-Sutherland
-function cohenSutherlandClip(x1, y1, x2, y2, clip) {
-    // Generar los codigos de region code1 y code2 para los puntos inicial y final de la linea
+// Funcion para recortar la linea usando Midpoint Subdivision
+function midPointClip(x1, y1, x2, y2, clip) {
+    // Generar los codigos de region para los dos puntos
     let code1 = getRegionCode(x1, y1, clip);
     let code2 = getRegionCode(x2, y2, clip);
 
-    let accept = false;
-
-    // Si la línea cruza la región de recorte, se deben encontrar los puntos de intersección con los bordes del rectángulo.
-    while (true) {
-        if ((code1 | code2) === 0) {
-            accept = true;
-            break; // La línea está completamente dentro
-        } else if ((code1 & code2) !== 0) {
-            break; // La línea está completamente fuera
-        } else {
-            let codeOut  = code1 ? code1 : code2;
-            let x, y;
-            // Determinar el punto de intersección con el borde de recorte
-            if (codeOut & 8) { // Arriba
-                x = x1 + (x2 - x1) * (clip.ymax - y1) / (y2 - y1);
-                y = clip.ymax;
-            } else if (codeOut & 4) { // Abajo
-                x = x1 + (x2 - x1) * (clip.ymin - y1) / (y2 - y1);
-                y = clip.ymin;
-            } else if (codeOut & 2) { // Derecha
-                y = y1 + (y2 - y1) * (clip.xmax - x1) / (x2 - x1);
-                x = clip.xmax;
-            }else if (codeOut & 1) { // Izquierda
-                y = y1+ (y2 - y1)* (clip.xmin - x1) / (x2 - x1);
-                x = clip.xmin;
-            }
-            // Actualizacion de los puntos
-            // Si el extremo de la linea estaba fuera, su nuevo punto recortado reemplaza el original y region
-            if (codeOut === code1) {
-                x1 = x;
-                y1 = y;
-                code1 = getRegionCode(x1, y1, clip);
-            } else {
-                x2 = x;
-                y2 = y;
-                code2 = getRegionCode(x2, y2, clip);
-            }
-        }
-    }
-    // Si la linea fue aceptada despues del recorte, se retorna la nueva linea recortada; si no, retorna visible
-    if (accept) {
+    // Si ambos estan dentro, la linea es completamente visible
+    if (code1 === 0 && code2 === 0) {
         return [x1, y1, x2, y2];
-    } else {
+    }
+
+    // Si ambos comparten una misma region exterior, esta completamente fuera
+    if ((code1 & code2) !== 0) {
         return null;
     }
+
+    // --- Subdivision por punto medio ---
+    // Para cada punto exterior, se usa busqueda binaria (midpoint subdivision)
+    // para encontrar el punto de interseccion con el borde de recorte.
+
+    if (code1 !== 0) {
+        // P1 esta fuera → moverlo hacia P2 (que esta dentro o cruza)
+        let inX = x2, inY = y2;   // punto interior conocido (o asumido)
+        let outX = x1, outY = y1; // punto exterior
+        let iter = 0;
+
+        while (iter < 50) {
+            const mx = (inX + outX) / 2;
+            const my = (inY + outY) / 2;
+
+            if (getRegionCode(mx, my, clip) === 0) {
+                // El punto medio esta dentro → mover el punto interior hacia afuera
+                inX = mx;
+                inY = my;
+            } else {
+                // El punto medio esta fuera → mover el punto exterior hacia adentro
+                outX = mx;
+                outY = my;
+            }
+
+            // Si la distancia entre ambos puntos es muy pequena, convergio
+            if (Math.abs(inX - outX) < 0.0001 && Math.abs(inY - outY) < 0.0001) break;
+            iter++;
+        }
+        // El punto de interseccion es el ultimo punto interior encontrado
+        x1 = inX;
+        y1 = inY;
+        code1 = getRegionCode(x1, y1, clip);
+    }
+
+    if (code2 !== 0) {
+        // P2 esta fuera → moverlo hacia P1 (que ya deberia estar dentro o cruza)
+        let inX = x1, inY = y1;
+        let outX = x2, outY = y2;
+        let iter = 0;
+
+        while (iter < 50) {
+            const mx = (inX + outX) / 2;
+            const my = (inY + outY) / 2;
+
+            if (getRegionCode(mx, my, clip) === 0) {
+                inX = mx;
+                inY = my;
+            } else {
+                outX = mx;
+                outY = my;
+            }
+
+            if (Math.abs(inX - outX) < 0.0001 && Math.abs(inY - outY) < 0.0001) break;
+            iter++;
+        }
+        x2 = inX;
+        y2 = inY;
+        code2 = getRegionCode(x2, y2, clip);
+    }
+
+    // Verificacion final: si ambos puntos estan dentro, la linea es visible
+    if (code1 === 0 && code2 === 0) {
+        return [x1, y1, x2, y2];
+    }
+
+    return null;
 }
 
-// Líneas originales (pares de puntos)
+// Lineas originales (pares de puntos)
 const lines = [
     [-0.8, -0.6, 0.6, 0.9],
     [-0.9, 0.5, 0.8, -0.4],
     [-0.2, -0.2, 0.2, 0.2]
 ];
 
-// Región de recorte
+// Region de recorte
 const clipRect = {
     xmin: -0.5,
     xmax: 0.5,
@@ -150,7 +181,7 @@ function drawScene() {
     const positions = [];
     const colors = [];
 
-    // 1. Dibujar rectángulo de recorte
+    // 1. Dibujar rectangulo de recorte
     const box = [
         clipRect.xmin, clipRect.ymin, 
         clipRect.xmax, clipRect.ymin, 
@@ -164,15 +195,15 @@ function drawScene() {
         colors.push(0, 0, 1); // Azul
     }
 
-    // 2. Dibujar líneas originales (gris)
+    // 2. Dibujar lineas originales (gris)
     for (const [x0, y0, x1, y1] of lines) {
         positions.push(x0, y0, x1, y1);
         colors.push(0.7, 0.7, 0.7, 0.7, 0.7, 0.7);
     }
 
-    // 3. Dibujar líneas recortadas (rojo)
+    // 3. Dibujar lineas recortadas (rojo)
     for (const [x0, y0, x1, y1] of lines) {
-        const clipped = cohenSutherlandClip(x0, y0, x1, y1, clipRect);
+        const clipped = midPointClip(x0, y0, x1, y1, clipRect);
         if (clipped) {
             const [cx0, cy0, cx1, cy1] = clipped;
             positions.push(cx0, cy0, cx1, cy1);
@@ -184,18 +215,17 @@ function drawScene() {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     gl.enableVertexAttribArray (positionLocation);
-    gl.vertexAttribPointer (positionLocation, 2, gl. FLOAT, false, 0, 0);
+    gl.vertexAttribPointer (positionLocation, 2, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     gl.enableVertexAttribArray (colorLocation);
-    gl.vertexAttribPointer (colorLocation, 3, gl. FLOAT, false, 0, 0);
+    gl.vertexAttribPointer (colorLocation, 3, gl.FLOAT, false, 0, 0);
 
     // Dibujar todo
-    gl.drawArrays (gl.LINE_STRIP, 0, 5); // Rectángulo
-    gl.drawArrays(gl.LINES, 5, lines.length * 2); // Líneas originales
-    gl.drawArrays (gl. LINES, 5 + lines.length * 2, lines.length * 2); // Líneas re
+    gl.drawArrays (gl.LINE_STRIP, 0, 5); // Rectangulo
+    gl.drawArrays(gl.LINES, 5, lines.length * 2); // Lineas originales
+    gl.drawArrays(gl.LINES, 5 + lines.length * 2, lines.length * 2); // Lineas recortadas
 }
 
 drawScene();
-
