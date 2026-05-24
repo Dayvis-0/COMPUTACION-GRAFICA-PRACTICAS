@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Recorte de Lineas Cohen</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            .div-canvas {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 20px 0;
+            }
+
+            canvas {
+                border: 1px solid #fff;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1>Cohen-Shutherland en WebGl</h1>
+        <div class="div-canvas">
+            <canvas id="glcanvas" width="500" height="500"></canvas>
+            <script src="RecorteLineasCohen.js"></script>
+        </div>
+    </body>
+</html>

@@ -1,5 +1,5 @@
-// Ejercicio 5: Movimiento con Rebote
-// La figura se mueve automáticamente y rebota al chocar con los bordes del canvas
+// Ejercicio 6: Movimiento con Teleport Aleatorio
+// Al llegar al borde, la figura se teletransporta a una posición aleatoria dentro del canvas
 
 const canvas = document.getElementById("glcanvas");
 const gl = canvas.getContext("webgl");
@@ -14,13 +14,13 @@ let transformLocation;
 let colorLocation;
 let currentBuffers = null;
 let currentShape = 'circulo';
-let collisionRadius = 0.3;  // Radio de colisión según la forma
+let collisionRadius = 0.3;
 
 // Estado de movimiento
-let posX = 0, posY = 0;      // Posición actual
-let velX = 0.005, velY = 0.003;  // Velocidad en cada eje
+let posX = 0, posY = 0;
+let velX = 0.001, velY = 0.001;
 let angle = 0;
-const LIMITE = 1.0;            // Límite del canvas en coordenadas normalizadas
+const LIMITE = 1.0;
 
 // Vertex shader: transforma cada vértice con la matriz 3x3
 const vsSource = `
@@ -151,8 +151,7 @@ function setShape(shape) {
             break;
         case 'cuadrado':
             currentBuffers = createSquareBuffers();
-            // Al rotar, la esquina se extiende más que el lado
-            collisionRadius     = Math.sqrt(0.3 * 0.3 + 0.3 * 0.3);  // ≈ 0.424
+            collisionRadius = Math.sqrt(0.3 * 0.3 + 0.3 * 0.3);  // ≈ 0.424
             break;
         case 'triangulo':
             currentBuffers = createTriangleBuffers();
@@ -200,18 +199,20 @@ function multiplyMat3(a, b) {
     ]);
 }
 
-// Loop principal: update → bounce → transform → render
+// Loop principal: update → teleport → transform → render
 function draw() {
     // Avanzar posición y rotación
     posX += velX;
     posY += velY;
     angle += 0.02;
 
-    // Rebote elástico: invierte la velocidad y corrige posición
-    if (posX + collisionRadius >= LIMITE) { velX = -Math.abs(velX); posX = LIMITE - collisionRadius; }
-    if (posX - collisionRadius <= -LIMITE) { velX = Math.abs(velX); posX = -LIMITE + collisionRadius; }
-    if (posY + collisionRadius >= LIMITE) { velY = -Math.abs(velY); posY = LIMITE - collisionRadius; }
-    if (posY - collisionRadius <= -LIMITE) { velY = Math.abs(velY); posY = -LIMITE + collisionRadius; }
+    // Teleport: al tocar un borde, salta a una posición aleatoria dentro del canvas
+    if (posX + collisionRadius >= LIMITE || posX - collisionRadius <= -LIMITE ||
+        posY + collisionRadius >= LIMITE || posY - collisionRadius <= -LIMITE) {
+        const margen = LIMITE - collisionRadius;
+        posX = (Math.random() * 2 - 1) * margen;
+        posY = (Math.random() * 2 - 1) * margen;
+    }
 
     // Componer transformación: M = T × R × S  (se aplica S → R → T)
     const T = createTranslationMatrix(posX, posY);
@@ -222,7 +223,7 @@ function draw() {
     M = multiplyMat3(M, S);
 
     gl.uniformMatrix3fv(transformLocation, false, M);
-    gl.uniform3fv(colorLocation, [1.0, 0.0, 0.0]); // Color 
+    gl.uniform3fv(colorLocation, [0.2, 0.6, 0.9]);
 
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -236,7 +237,7 @@ function draw() {
     requestAnimationFrame(draw);     // Siguiente frame
 }
 
-// Inicialización: programa, atributos, forma por defecto, y arranque
+// Inicialización
 shaderProgram = initShaderProgram();
 gl.useProgram(shaderProgram);
 
