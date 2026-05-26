@@ -9,7 +9,7 @@ const vertexShaderSource = `
         v_color = a_color;
     }
 `;
-
+    
 // Shader de fragmentos: recibe color y lo aplica al fragmento 
 const fragmentShaderSource = `
     precision mediump float;
