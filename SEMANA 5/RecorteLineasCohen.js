@@ -198,4 +198,3 @@ function drawScene() {
 }
 
 drawScene();
-

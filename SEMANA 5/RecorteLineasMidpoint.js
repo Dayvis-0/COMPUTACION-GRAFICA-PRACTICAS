@@ -62,101 +62,44 @@ const colorLocation = gl.getAttribLocation(program, "a_color");
 const positionBuffer = gl.createBuffer();
 const colorBuffer = gl.createBuffer();
 
-// 4. Algoritmo Midpoint Subdivision (Punto Medio)
-// Funcion para calcular el codigo de region de un punto
-function getRegionCode(x, y, clip) {
-    let code = 0;
+// 4. Algoritmo Midpoint Subdivision (Punto Medio) — versión PURA
+// Solo subdivide recursivamente en el punto medio hasta el límite de
+// profundidad, y ahi verifica si el punto medio esta dentro del rectangulo.
 
-    if (x < clip.xmin) code |= 1; // Izquierda
-    if (x > clip.xmax) code |= 2; // Derecha 
-    if (y < clip.ymin) code |= 4; // Abajo
-    if (y > clip.ymax) code |= 8; // Arriba
-
-    return code;
+// Funcion para verificar si un punto esta dentro del rectangulo de recorte
+function puntoEstaDentro(x, y, clip) {
+    return x >= clip.xmin && x <= clip.xmax && y >= clip.ymin && y <= clip.ymax;
 }
 
-// Funcion para recortar la linea usando Midpoint Subdivision
-function midPointClip(x1, y1, x2, y2, clip) {
-    // Generar los codigos de region para los dos puntos
-    let code1 = getRegionCode(x1, y1, clip);
-    let code2 = getRegionCode(x2, y2, clip);
+// Funcion para recortar la linea usando Midpoint Subdivision puro
+function midPointClip(x1, y1, x2, y2, clip, profundidad = 0) {
+    const MAX_PROFUNDIDAD = 15;
 
-    // Si ambos estan dentro, la linea es completamente visible
-    if (code1 === 0 && code2 === 0) {
-        return [x1, y1, x2, y2];
-    }
-
-    // Si ambos comparten una misma region exterior, esta completamente fuera
-    if ((code1 & code2) !== 0) {
+    // Caso base: se llego a la maxima profundidad de subdivision
+    // Se evalua el punto medio del segmento actual
+    if (profundidad >= MAX_PROFUNDIDAD) {
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        if (puntoEstaDentro(mx, my, clip)) {
+            return [x1, y1, x2, y2];
+        }
         return null;
     }
 
-    // --- Subdivision por punto medio ---
-    // Para cada punto exterior, se usa busqueda binaria (midpoint subdivision)
-    // para encontrar el punto de interseccion con el borde de recorte.
+    // Paso recursivo: subdividir en el punto medio
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
 
-    if (code1 !== 0) {
-        // P1 esta fuera → moverlo hacia P2 (que esta dentro o cruza)
-        let inX = x2, inY = y2;   // punto interior conocido (o asumido)
-        let outX = x1, outY = y1; // punto exterior
-        let iter = 0;
+    const izquierda = midPointClip(x1, y1, mx, my, clip, profundidad + 1);
+    const derecha   = midPointClip(mx, my, x2, y2, clip, profundidad + 1);
 
-        while (iter < 50) {
-            const mx = (inX + outX) / 2;
-            const my = (inY + outY) / 2;
-
-            if (getRegionCode(mx, my, clip) === 0) {
-                // El punto medio esta dentro → mover el punto interior hacia afuera
-                inX = mx;
-                inY = my;
-            } else {
-                // El punto medio esta fuera → mover el punto exterior hacia adentro
-                outX = mx;
-                outY = my;
-            }
-
-            // Si la distancia entre ambos puntos es muy pequena, convergio
-            if (Math.abs(inX - outX) < 0.0001 && Math.abs(inY - outY) < 0.0001) break;
-            iter++;
-        }
-        // El punto de interseccion es el ultimo punto interior encontrado
-        x1 = inX;
-        y1 = inY;
-        code1 = getRegionCode(x1, y1, clip);
+    // Fusionar segmentos adyacentes (el rectangulo es convexo, asi que
+    // si ambos lados tienen parte visible, forman un solo segmento continuo)
+    if (izquierda && derecha) {
+        return [izquierda[0], izquierda[1], derecha[2], derecha[3]];
     }
 
-    if (code2 !== 0) {
-        // P2 esta fuera → moverlo hacia P1 (que ya deberia estar dentro o cruza)
-        let inX = x1, inY = y1;
-        let outX = x2, outY = y2;
-        let iter = 0;
-
-        while (iter < 50) {
-            const mx = (inX + outX) / 2;
-            const my = (inY + outY) / 2;
-
-            if (getRegionCode(mx, my, clip) === 0) {
-                inX = mx;
-                inY = my;
-            } else {
-                outX = mx;
-                outY = my;
-            }
-
-            if (Math.abs(inX - outX) < 0.0001 && Math.abs(inY - outY) < 0.0001) break;
-            iter++;
-        }
-        x2 = inX;
-        y2 = inY;
-        code2 = getRegionCode(x2, y2, clip);
-    }
-
-    // Verificacion final: si ambos puntos estan dentro, la linea es visible
-    if (code1 === 0 && code2 === 0) {
-        return [x1, y1, x2, y2];
-    }
-
-    return null;
+    return izquierda || derecha || null;
 }
 
 // Lineas originales (pares de puntos)
