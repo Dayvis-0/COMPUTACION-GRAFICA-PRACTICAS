@@ -1,3 +1,10 @@
+// 4. ALGORITMO MIDPOINT SUBDIVISION
+
+/* Idea: parte la línea por la mitad una y otra vez hasta que cada pedacito
+quede totalmente dentro de la ventana (mostralo) o totalmente fuera (descartalo).
+Si un extremo está dentro y el otro fuera, el punto medio se acerca al borde.
+Repetís recursivamente hasta que solo sobre lo visible. */
+
 // Shader de vertices: recibe coordenadas y pasa color
 const vertexShaderSource = `
     attribute vec2 a_position;
@@ -57,9 +64,6 @@ const colorLocation = gl.getAttribLocation(program, "a_color"); // ← Ubicar at
 const positionBuffer = gl.createBuffer(); // ← Buffer de coordenadas
 const colorBuffer = gl.createBuffer(); // ← Buffer de colores
 
-
-// 4. ALGORITMO MIDPOINT SUBDIVISION (PURO y OPTIMIZADO)
-
 // Códigos de región binarios (Top, Bottom, Right, Left)
 const INSIDE = 0; // 0000 — Dentro
 const LEFT   = 1; // 0001 — Izquierda
@@ -90,7 +94,7 @@ function midPointClip(x1, y1, x2, y2, clip) {
     // CASO 2: Rechazo Trivial (Misma región externa)
     if ((code1 & code2) !== 0) { // ← AND ≠ 0 → comparten bit fuera → RECHAZAR
         return null; // ← Línea invisible
-    }
+    } 
 
     // Límite de precisión: puntos casi idénticos
     if (Math.abs(x1 - x2) < 1e-5 && Math.abs(y1 - y2) < 1e-5) { // ← Muy cerca? ya no subdividir
@@ -116,7 +120,12 @@ function midPointClip(x1, y1, x2, y2, clip) {
 const lines = [ // ← 3 líneas de prueba: cruzando, afuera, dentro
     [-0.8, -0.6, 0.6, 0.9],  // ← Cruza la región
     [-0.9, 0.5, 0.8, -0.4],  // ← Cruza la región
-    [-0.2, -0.2, 0.2, 0.2]   // ← Totalmente dentro
+    [-0.2, -0.2, 0.2, 0.2],   // ← Totalmente dentro
+    [-0.3, -0.2, 0.2, 0.2],   // ← Totalmente dentro
+    [-0.4, -0.2, 0.2, 0.2],   // ← Totalmente dentro
+    [-0.5, -0.2, 0.2, 0.2],   // ← Totalmente dentro
+    [-0.6, -0.2, 0.2, 0.2]   // ← Totalmente dentro
+
 ];
 
 // Región de recorte (viewport)
@@ -128,7 +137,7 @@ const clipRect = { // ← Ventana de recorte [-0.5, 0.5] en X e Y
 };
 
 // Dibujar todo
-function drawScene() { // ← Render loop manual
+function drawScene() { 
     gl.clearColor(1, 1, 1, 1); // ← Fondo blanco
     gl.clear(gl.COLOR_BUFFER_BIT); // ← Limpiar pantalla
     
@@ -152,7 +161,7 @@ function drawScene() { // ← Render loop manual
     // 2. Dibujar líneas originales (Gris)
     for (const [x0, y0, x1, y1] of lines) {
         positions.push(x0, y0, x1, y1);
-        colors.push(0.7, 0.7, 0.7, 0.7, 0.7, 0.7);
+            colors.push(0.7, 0.7, 0.7, 0.7, 0.7, 0.7);
     }
 
     // 3. Dibujar líneas recortadas (Rojo) de forma dinámica
@@ -177,7 +186,7 @@ function drawScene() { // ← Render loop manual
     gl.enableVertexAttribArray(colorLocation); // ← Habilitar atributo color
     gl.vertexAttribPointer(colorLocation, 3, gl.FLOAT, false, 0, 0); // ← 3 floats por color
 
-    // Renderizado por offsets correctos
+    // Renderizado 
     gl.drawArrays(gl.LINE_STRIP, 0, 5); // ← Rectángulo recorte
     gl.drawArrays(gl.LINES, 5, lines.length * 2); // ← Líneas originales
     gl.drawArrays(gl.LINES, 5 + (lines.length * 2), clippedVertices); // ← Líneas recortadas
