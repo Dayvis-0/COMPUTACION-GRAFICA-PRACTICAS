@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Superficie de Perlin Noise</title>
+        <style>
+            :root { color-scheme: light dark; }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            canvas {
+                border: 1px solid #555;
+                display: block;
+                margin: 10px auto;
+                cursor: grab;
+            }
+
+            canvas:active { cursor: grabbing; }
+
+            .main-layout {
+                display: flex;
+                justify-content: center;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-top: 10px;
+            }
+
+            .panel {
+                border: 1px solid #444;
+                border-radius: 8px;
+                padding: 16px 20px;
+                min-width: 200px;
+                text-align: left;
+            }
+
+            .panel h3 {
+                margin: 0 0 12px 0;
+                text-align: center;
+                font-size: 1em;
+                color: #0ff;
+            }
+
+            .panel label {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin: 8px 0;
+                font-size: 0.85em;
+                gap: 10px;
+            }
+
+            .panel label span.val {
+                color: #0ff;
+                font-family: monospace;
+                min-width: 32px;
+                text-align: right;
+            }
+
+            .panel input[type="range"] {
+                flex: 1;
+                max-width: 140px;
+            }
+
+            .panel input[type="number"] {
+                width: 70px;
+                background: #222;
+                border: 1px solid #555;
+                color: #fff;
+                border-radius: 4px;
+                padding: 3px 6px;
+                font-family: monospace;
+            }
+
+            button {
+                padding: 8px 18px;
+                border: 1px solid #888;
+                border-radius: 6px;
+                background: #333;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.95em;
+                margin: 4px;
+            }
+
+            button:hover { background: #555; }
+            button.danger { border-color: #f44; }
+            button.regenerate { border-color: #0ff; background: #044; }
+            button.regenerate:hover { background: #066; }
+
+            .info-bar {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+                margin: 8px 0;
+                font-size: 0.85em;
+                color: #aaa;
+            }
+
+            .legend {
+                display: flex;
+                justify-content: center;
+                gap: 14px;
+                flex-wrap: wrap;
+                margin: 8px 0;
+                font-size: 0.8em;
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .color-swatch {
+                width: 16px;
+                height: 10px;
+                border-radius: 2px;
+                border: 1px solid #666;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Superficie de Perlin Noise</h1>
+        <p style="color: #888; font-size: 0.85em; margin: 4px 0;">
+            Arrastrá para orbitar · Scroll para zoom · Generación procedural de terreno con ruido de Perlin
+        </p>
+
+        <canvas id="glcanvas" width="650" height="450"></canvas>
+
+        <div class="main-layout">
+            <div class="panel">
+                <h3>🌍 Terreno</h3>
+                <label>
+                    Seed
+                    <input type="number" id="seedInput" value="42" min="0" max="9999">
+                </label>
+                <label>
+                    Escala
+                    <input type="range" id="scaleSlider" min="0.5" max="5" step="0.1" value="2">
+                    <span class="val" id="scaleVal">2.0</span>
+                </label>
+                <label>
+                    Altura
+                    <input type="range" id="heightSlider" min="0.2" max="3" step="0.1" value="1.5">
+                    <span class="val" id="heightVal">1.5</span>
+                </label>
+                <label>
+                    Resolución
+                    <input type="range" id="resSlider" min="20" max="200" step="5" value="80">
+                    <span class="val" id="resVal">80</span>
+                </label>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button id="btnRegen" class="regenerate">🎲 Regenerar</button>
+                    <button id="btnResetView" class="danger">↺ Vista</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>🔊 fBm (Ruido Fractal)</h3>
+                <label>
+                    Octavas
+                    <input type="range" id="octavesSlider" min="1" max="8" step="1" value="5">
+                    <span class="val" id="octavesVal">5</span>
+                </label>
+                <label>
+                    Persistencia
+                    <input type="range" id="persistenceSlider" min="0.1" max="0.9" step="0.05" value="0.5">
+                    <span class="val" id="persistenceVal">0.50</span>
+                </label>
+                <label>
+                    Lacunaridad
+                    <input type="range" id="lacunaritySlider" min="1.5" max="4" step="0.1" value="2.0">
+                    <span class="val" id="lacunarityVal">2.0</span>
+                </label>
+                <label>
+                    <span></span>
+                    <input type="checkbox" id="wireframeCheck" checked>
+                    <span style="color: #aaa;">Mostrar wireframe</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="info-bar">
+            <span><strong>Vértices:</strong> <span id="vertInfo">—</span></span>
+            <span><strong>Triángulos:</strong> <span id="triInfo">—</span></span>
+            <span><strong>Altura min:</strong> <span id="hMinInfo">—</span></span>
+            <span><strong>Altura max:</strong> <span id="hMaxInfo">—</span></span>
+        </div>
+
+        <hr style="max-width: 500px; border-color: #444; margin: 12px auto;">
+
+        <div class="legend">
+            <div class="legend-item"><div class="color-swatch" style="background: linear-gradient(90deg, #003, #006, #008, #00a, #00d, #00f, #06f, #0af, #0df);"></div></div>
+            <span>Agua profunda → somero</span>
+            <div class="legend-item"><div class="color-swatch" style="background: linear-gradient(90deg, #c9a84c, #8b7d3c, #5a8a3c, #2d6b1e, #1a4a0a);"></div></div>
+            <span>Playa → bosque</span>
+            <div class="legend-item"><div class="color-swatch" style="background: linear-gradient(90deg, #5a4a3a, #8a7a6a, #b0a898, #ddd, #fff);"></div></div>
+            <span>Roca → nieve</span>
+        </div>
+
+        <script src="Perlin-Surface.js"></script>
+    </body>
+</html>

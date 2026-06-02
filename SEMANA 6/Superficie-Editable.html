@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Superficie de Bézier Editable</title>
+        <style>
+            :root { color-scheme: light dark; }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            canvas {
+                border: 1px solid #555;
+                display: block;
+                margin: 10px auto;
+                cursor: grab;
+            }
+
+            canvas:active { cursor: grabbing; }
+            canvas.dragging-point { cursor: move; }
+
+            .controls {
+                margin: 15px 0;
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+
+            button {
+                padding: 8px 16px;
+                border: 1px solid #888;
+                border-radius: 6px;
+                background: #333;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.95em;
+            }
+
+            button:hover { background: #555; }
+            button.danger { border-color: #f44; }
+
+            .info-bar {
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                flex-wrap: wrap;
+                margin: 10px 0;
+                font-size: 0.95em;
+            }
+
+            .legend {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                margin: 10px 0;
+                font-size: 0.85em;
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .color-dot {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                border: 1px solid #888;
+            }
+
+            .color-line {
+                width: 24px;
+                height: 3px;
+                border: none;
+            }
+
+            label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            input[type="range"] { width: 160px; }
+
+            #pointInfo {
+                color: #0f0;
+                font-family: monospace;
+                font-size: 0.9em;
+                min-height: 1.2em;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Superficie de Bézier — Editable</h1>
+        <p style="color: #888; font-size: 0.9em;">
+            <strong>Click + arrastrar</strong> sobre un punto de control para moverlo.
+            <strong>Click + arrastrar</strong> en espacio vacío para orbitar.
+            <strong>Scroll</strong> para zoom.
+        </p>
+
+        <canvas id="glcanvas" width="700" height="500"></canvas>
+
+        <div class="controls">
+            <label>
+                Resolución:
+                <input type="range" id="resSlider" min="5" max="100" value="25">
+                <span id="resValue">25</span>
+            </label>
+            <button id="btnResetView" class="danger">↺ Reset vista</button>
+            <button id="btnResetGrid">↺ Reset superficie</button>
+        </div>
+
+        <div class="info-bar">
+            <span><strong>Grado:</strong> <span id="degInfo">3 × 3</span></span>
+            <span><strong>Puntos de control:</strong> <span id="ptInfo">16</span></span>
+            <span id="pointInfo">⚪ Ningún punto seleccionado</span>
+        </div>
+
+        <hr style="max-width: 600px; border-color: #444;">
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-line" style="background: #888;"></div>
+                <span>Malla de control</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-dot" style="background: #f44;"></div>
+                <span>Punto de control</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-dot" style="background: #0f0; width: 18px; height: 18px;"></div>
+                <span>Punto seleccionado</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-line" style="background: #0ff;"></div>
+                <span>Superficie (U)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-line" style="background: #ff0;"></div>
+                <span>Superficie (V)</span>
+            </div>
+        </div>
+
+        <p style="font-size: 0.85em; color: #888; margin-top: 16px;">
+            S(u,v) = Σᵢ Σⱼ P<sub>i,j</sub> · B<sub>i,3</sub>(v) · B<sub>j,3</sub>(u)
+            &nbsp;·&nbsp; Arrastrá los puntos para deformar la superficie en tiempo real.
+        </p>
+
+        <script src="Superficie-Editable.js"></script>
+    </body>
+</html>

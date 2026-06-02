@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Superficie de Bézier</title>
+        <style>
+            :root { color-scheme: light dark; }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                text-align: center;
+            }
+
+            canvas {
+                border: 1px solid #555;
+                display: block;
+                margin: 10px auto;
+                cursor: grab;
+            }
+
+            canvas:active { cursor: grabbing; }
+
+            .controls {
+                margin: 15px 0;
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+
+            button {
+                padding: 8px 16px;
+                border: 1px solid #888;
+                border-radius: 6px;
+                background: #333;
+                color: #fff;
+                cursor: pointer;
+                font-size: 0.95em;
+            }
+
+            button:hover { background: #555; }
+            button.danger { border-color: #f44; }
+
+            .info-bar {
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+                flex-wrap: wrap;
+                margin: 10px 0;
+                font-size: 0.95em;
+            }
+
+            .legend {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+                margin: 10px 0;
+                font-size: 0.85em;
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .color-dot {
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                border: 1px solid #888;
+            }
+
+            .color-line {
+                width: 24px;
+                height: 3px;
+                border: none;
+            }
+
+            label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            input[type="range"] { width: 160px; }
+        </style>
+    </head>
+    <body>
+        <h1>Superficie de Bézier (Producto Tensorial)</h1>
+        <p style="color: #888; font-size: 0.9em;">
+            Arrastrá el mouse para rotar la vista 3D. La superficie se genera aplicando
+            De Casteljau en dos direcciones (u, v).
+        </p>
+
+        <canvas id="glcanvas" width="700" height="500"></canvas>
+
+        <div class="controls">
+            <label>
+                Resolución:
+                <input type="range" id="resSlider" min="5" max="100" value="25">
+                <span id="resValue">25</span>
+            </label>
+            <button id="btnResetView" class="danger">↺ Reset vista</button>
+            <button id="btnResetGrid">↺ Reset superficie</button>
+        </div>
+
+        <div class="info-bar">
+            <span><strong>Grado:</strong> <span id="degInfo">3 × 3</span></span>
+            <span><strong>Puntos de control:</strong> <span id="ptInfo">16</span></span>
+            <span><strong>Parches:</strong> <span id="patchInfo">1</span></span>
+        </div>
+
+        <hr style="max-width: 600px; border-color: #444;">
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-line" style="background: #888;"></div>
+                <span>Malla de control</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-dot" style="background: #f44;"></div>
+                <span>Punto de control</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-line" style="background: #0ff;"></div>
+                <span>Superficie (U)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-line" style="background: #ff0;"></div>
+                <span>Superficie (V)</span>
+            </div>
+        </div>
+
+        <p style="font-size: 0.85em; color: #888; margin-top: 16px;">
+            S(u,v) = Σᵢ Σⱼ P<sub>i,j</sub> · B<sub>i,3</sub>(v) · B<sub>j,3</sub>(u)
+            &nbsp;·&nbsp; <span style="color: #ff0;">De Casteljau en filas (u)</span>
+            &nbsp;→&nbsp; <span style="color: #0ff;">De Casteljau en columnas (v)</span>
+        </p>
+
+        <script src="Superficie-Bezier.js"></script>
+    </body>
+</html>
