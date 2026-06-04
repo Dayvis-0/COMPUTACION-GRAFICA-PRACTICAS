@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Animaciones 2D en WebGL - Colores por Vértice</title>
+                <style>
+            :root {
+                color-scheme: light dark;
+            }
+
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+
+            h1 {
+                text-align: center;
+            }
+
+            .div-canvas {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 20px 0;
+            }
+
+            canvas {
+                border: 1px solid #fff;
+            }
+
+            #info {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                color: white;
+                background: rgba(0,0,0,0.6);
+                padding: 10px 15px;
+                border-radius: 8px;
+                pointer-events: none;
+                z-index: 10;
+                font-size: 14px;
+            }
+            #controls {
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+                color: white;
+                background: rgba(0,0,0,0.7);
+                padding: 10px;
+                border-radius: 8px;
+                font-family: monospace;
+                font-size: 14px;
+                pointer-events: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Animaciones 2D en WebGL - Colores por Vértice (Interpolación)</h1>
+        <div id="info">
+            <strong>Gradiente por vértice</strong> | a_color → varying → interpolación en fragment
+        </div>
+        <div id="controls">
+            [ESPACIO] Iniciar/Detener | [↑/↓] Aumentar/Disminuir velocidad
+        </div>
+        <div class="div-canvas">
+            <canvas id="glcanvas" width="500" height="500"></canvas>
+            <script src="ColoresInterpolados.js"></script>
+        </div>
+    </body>
+</html>
