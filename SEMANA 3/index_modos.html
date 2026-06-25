@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modos de dibujo WebGL</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            padding: 100px;
+        }
+        body {
+            font-family: system-ui, sans-serif;
+        }
+        .contenedor {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        canvas {
+            border: 2px solid #fff;
+        }
+        .leyenda {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px 30px;
+            font-size: 14px;
+        }
+        .leyenda-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .color-badge {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid #888;
+            flex-shrink: 0;
+        }
+        .modo-nombre {
+            font-weight: bold;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Modos de dibujo en WebGL</h1>
+
+    <div class="contenedor">
+        <canvas id="webgl-canvas" height="500" width="500"></canvas>
+
+        <div class="leyenda">
+            <div class="leyenda-item">
+                <span class="color-badge" style="background: cyan;"></span>
+                <span><span class="modo-nombre">gl.POINTS</span> — puntos individuales</span>
+            </div>
+            <div class="leyenda-item">
+                <span class="color-badge" style="background: yellow;"></span>
+                <span><span class="modo-nombre">gl.LINES</span> — pares de vértices como segmentos</span>
+            </div>
+            <div class="leyenda-item">
+                <span class="color-badge" style="background: lime;"></span>
+                <span><span class="modo-nombre">gl.LINE_STRIP</span> — línea continua</span>
+            </div>
+            <div class="leyenda-item">
+                <span class="color-badge" style="background: red;"></span>
+                <span><span class="modo-nombre">gl.TRIANGLES</span> — triángulos independientes</span>
+            </div>
+            <div class="leyenda-item">
+                <span class="color-badge" style="background: blue;"></span>
+                <span><span class="modo-nombre">gl.TRIANGLE_FAN</span> — abanico de triángulos</span>
+            </div>
+            <div class="leyenda-item">
+                <span class="color-badge" style="background: magenta;"></span>
+                <span><span class="modo-nombre">gl.TRIANGLE_STRIP</span> — tira de triángulos</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="app_modos.js"></script>
+</body>
+</html>

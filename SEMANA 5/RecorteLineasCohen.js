@@ -20,7 +20,6 @@ const fragmentShaderSource = `
     }
 `;
 
-
 // 1. Obtener contexto WebGL 
 const canvas = document.getElementById("glcanvas");
 const gl = canvas.getContext("webgl");
