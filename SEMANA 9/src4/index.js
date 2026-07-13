@@ -1,6 +1,7 @@
 import { createScene } from './core/SceneManager.js';
 import { createCamera } from './core/CameraManager.js';
 import { createRenderer } from './core/RendererManager.js';
+import { createControls } from './core/ControlsManager.js';
 import { createCube } from './objects/Cube.js';
 import { createLights } from './lights/Lights.js';
 import { setupResize } from './utils/ResizeHandler.js';
@@ -11,9 +12,11 @@ const container = document.getElementById('container');
 //      ESCENA
 const scene = createScene();
 //      CÁMARA — FOV 45° (probar también 120°), posición inicial modificada
-const camera = createCamera({ fov: 45, x: 3, y: 2, z: 5 });
+const camera = createCamera({ fov: 60, x: 0, y: 0, z: 5 });
 //      RENDERER
 const renderer = createRenderer(container);
+//      CONTROLES
+const controls = createControls(camera, renderer.domElement);
 //      OBJETOS
 const cube = createCube();
 scene.add(cube);
@@ -22,7 +25,7 @@ createLights(scene);
 //      RESPONSIVE
 setupResize(camera, renderer);
 //      ANIMACIÓN
-startAnimation(renderer, scene, camera, cube);
+startAnimation(renderer, scene, camera, cube, controls);
 
 /*═══════════════════════════════════════════════════════════════
                      ACTIVIDAD 3 — CÁMARA

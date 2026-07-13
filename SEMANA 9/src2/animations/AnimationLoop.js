@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export function startAnimation(renderer, scene, camera, cube, sphere) {
+export function startAnimation(renderer, scene, camera, cube, sphere, plane) {
 
     function animate() {
         requestAnimationFrame(animate);
