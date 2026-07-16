@@ -9,6 +9,7 @@ import { setupResize } from './utils/ResizeHandler.js';
 import { startAnimation } from './animations/AnimationLoop.js';
 import { createOrbitControls } from './controls/OrbitControlsManager.js';
 import { createLights } from './lights/Lights.js';
+import { createMaterialComparison } from './objects/MaterialComparison.js';
 
 //      CONTENEDOR
 const container = document.getElementById('container');
@@ -33,6 +34,10 @@ const cylinder = createCylinder();
 scene.add(cylinder);
 
 scene.add(createPlane());
+
+const materialsGroup = createMaterialComparison();
+materialsGroup.position.set(0, 1.5, -3);
+scene.add(materialsGroup);
 
 //      LUCES
 createLights(scene);
