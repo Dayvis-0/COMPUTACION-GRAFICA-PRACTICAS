@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Three.js - Arquitectura Modular</title>
+        <link rel="stylesheet" href="three.css">
+        <script type="importmap">
+            {
+                "imports": {
+                    "three" : "https://unpkg.com/three@0.179.1/build/three.module.js",
+                    "three/": "https://unpkg.com/three@0.179.1/",
+                    "three/examples/jsm/": "https://unpkg.com/three@0.179.1/examples/jsm/"
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+        <script type="module" src="src/index.js"></script>
+    </body>
+</html>
